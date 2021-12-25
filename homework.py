@@ -1,5 +1,5 @@
-from typing import List, Tuple
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass
+from typing import List, Tuple, Type
 
 
 @dataclass
@@ -8,22 +8,18 @@ class InfoMessage:
 
     training_type: str
     duration: float
-    distance: int
+    distance: float
     speed: float
     calories: float
 
     def get_message(self) -> str:
         """Получить строку."""
         return self.get_template_message().format(
-            self.training_type,
-            self.duration,
-            self.distance,
-            self.speed,
-            self.calories,
+            *astuple(self)
         )
 
     def get_template_message(self) -> str:
-        """Получить шаблон строки"""
+        """Получить шаблон строки."""
         return (
             "Тип тренировки: {}; Длительность: {:.3f} ч.; Дистанция: {:.3f}"
             " км; Ср. скорость: {:.3f} км/ч; Потрачено ккал: {:.3f}."
@@ -165,14 +161,14 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    dictionary: dict[str, Training] = {
+    dictionary: dict[str, Type[Training]] = {
         "SWM": Swimming,
         "RUN": Running,
         "WLK": SportsWalking,
     }
     training = dictionary.get(workout_type)
-    if not training:
-        return ValueError('Такой тренировки нет')
+    if training is None:
+        raise ValueError('Такой тренировки нет')
     return training(*data)
 
 
